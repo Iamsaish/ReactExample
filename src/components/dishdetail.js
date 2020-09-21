@@ -3,16 +3,13 @@ import { Card, CardImg, CardBody, CardTitle, CardText, Breadcrumb, BreadcrumbIte
      Label, Row, Col } from 'reactstrap';
 import {Link } from 'react-router-dom';
 import {Control, LocalForm, Errors} from 'react-redux-form';
-
-
-
-
-
+import {Loading} from './LoadingComponent';
+import { baseUrl } from '../shared/baseUrl';
 
 	function RenderDish({dish}) {
 		return (
 			<Card>
-				<CardImg width="100%" src={dish.image} alt={dish.name} />
+				<CardImg width="100%" src={baseUrl + dish.image} alt={dish.name} />
 				<CardBody>
 					<CardTitle>{dish.name}</CardTitle>
 					<CardText>{dish.description}</CardText>
@@ -21,7 +18,7 @@ import {Control, LocalForm, Errors} from 'react-redux-form';
 		);
 	}
 
-	function RenderComments({comments}) {
+	function RenderComments({comments, addComment, dishId}) {
         if (comments != null) {
             return (
                 <div>
@@ -40,7 +37,7 @@ import {Control, LocalForm, Errors} from 'react-redux-form';
                             );
                         })}
                     </ul>
-                    <CommentForm/>
+                    <CommentForm dishId={dishId} addComment= {addComment}/>
                 </div>
             );
         } else {
@@ -51,9 +48,28 @@ import {Control, LocalForm, Errors} from 'react-redux-form';
     }
 
 	const DishDetail =(props)=>{
+    if(props.isLoading){
+      return(
+        <div className="conrainer">
+          <div className="row">
+            <Loading/>
+          </div>
+        </div>
+      );
+    }
+
+    else if(props.errMsg){
+      return(
+        <div className="conrainer">
+          <div className="row">
+            <h4>{props.errMsg}</h4>
+          </div>
+        </div>
+      );
+    }
 		
 
-		if (props.dish != null) {
+		else if (props.dish != null) {
 			return (
 				<div className="container">
                 <div className="row">
@@ -72,7 +88,9 @@ import {Control, LocalForm, Errors} from 'react-redux-form';
                         <RenderDish dish={props.dish} />
                     </div>
                     <div className="col-12 col-md-5 m-1">
-                        <RenderComments comments={props.comments} />
+                        <RenderComments comments={props.comments}
+                         addComment={props.addComment}
+                         dishId={props.dish.id}/>
                     </div>
                 </div>
                 </div>
@@ -107,6 +125,7 @@ import {Control, LocalForm, Errors} from 'react-redux-form';
       
         handleSubmit(values) {
           this.toggleModal();
+          this.props.addComment(this.props.dishId, values.rating, values.author, values.comment);
         }
       
         render() {
